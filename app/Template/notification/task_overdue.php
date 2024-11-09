@@ -1,6 +1,6 @@
 <html>
 <body>
-<h2><?= t('Overdue tasks for the project(s) "%s"', $project_name) ?></h2>
+<h2><?= $soon_overdue ? t('Tasks will soon overdue for the project(s) "%s"', $project_name) : t('Overdue tasks for the project(s) "%s"', $project_name) ?></h2>
 
 <table style="font-size: .8em; table-layout: fixed; width: 100%; border-collapse: collapse; border-spacing: 0; margin-bottom: 20px;" cellpadding=5 cellspacing=1>
     <tr style="background: #fbfbfb; text-align: left; padding-top: .5em; padding-bottom: .5em; padding-left: 3px; padding-right: 3px;">

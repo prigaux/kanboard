@@ -174,13 +174,7 @@ class TaskFinderModel extends Base
                     ->findAllByColumn(TaskModel::TABLE.'.id');
     }
 
-    /**
-     * Get overdue tasks query
-     *
-     * @access public
-     * @return \PicoDb\Table
-     */
-    public function getOverdueTasksQuery()
+    private function getOverdueTasksBaseQuery()
     {
         return $this->db->table(TaskModel::TABLE)
                     ->columns(
@@ -198,8 +192,26 @@ class TaskFinderModel extends Base
                     ->join(UserModel::TABLE, 'id', 'owner_id')
                     ->eq(ProjectModel::TABLE.'.is_active', 1)
                     ->eq(TaskModel::TABLE.'.is_active', 1)
-                    ->neq(TaskModel::TABLE.'.date_due', 0)
+                    ->neq(TaskModel::TABLE.'.date_due', 0);
+    }
+
+    /**
+     * Get overdue tasks query
+     *
+     * @access public
+     * @return \PicoDb\Table
+     */
+    public function getOverdueTasksQuery()
+    {
+        return $this->getOverdueTasksBaseQuery()
                     ->lte(TaskModel::TABLE.'.date_due', time());
+    }
+
+    public function getSoonOverdueTasksQuery(int $hours)
+    {
+        return $this->getOverdueTasksBaseQuery($hours)
+                    ->gte(TaskModel::TABLE.'.date_due', time())
+                    ->lte(TaskModel::TABLE.'.date_due', time() + $hours * 60*60);
     }
 
     /**

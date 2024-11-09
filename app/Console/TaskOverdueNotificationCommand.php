@@ -18,6 +18,7 @@ class TaskOverdueNotificationCommand extends BaseCommand
             ->setName('notification:overdue-tasks')
             ->setDescription('Send notifications for overdue tasks')
             ->addOption('show', null, InputOption::VALUE_NONE, 'Show sent overdue tasks')
+            ->addOption('soon', 'i', InputOption::VALUE_REQUIRED, 'Tasks which will overdue in XX hours')
             ->addOption('group', null, InputOption::VALUE_NONE, 'Group all overdue tasks for one user (from all projects) in one email')
             ->addOption('manager', null, InputOption::VALUE_NONE, 'Send all overdue tasks to project manager(s) in one email')
             ->addOption('project', 'p', InputOption::VALUE_REQUIRED, 'Send notifications only the given project')
@@ -33,6 +34,8 @@ class TaskOverdueNotificationCommand extends BaseCommand
                 ->eq(ProjectModel::TABLE.'.identifier', $input->getOption('project'))
                 ->closeOr()
                 ->findAll();
+        } else if ($input->getOption('soon')) {
+            $tasks = $this->taskFinderModel->getSoonOverdueTasksQuery($input->getOption('soon'))->findAll();
         } else {
             $tasks = $this->taskFinderModel->getOverdueTasks();
         }
@@ -164,7 +167,7 @@ class TaskOverdueNotificationCommand extends BaseCommand
             $this->userNotificationModel->sendUserNotification(
                 $user,
                 TaskModel::EVENT_OVERDUE,
-                array('tasks' => $user_tasks, 'project_name' => implode(', ', $project_names))
+                array('tasks' => $user_tasks, 'project_name' => implode(', ', $project_names), 'soon_overdue' => $tasks[0]['date_due'] >= time())
             );
         }
     }
@@ -181,7 +184,7 @@ class TaskOverdueNotificationCommand extends BaseCommand
         $this->userNotificationModel->sendUserNotification(
             $manager,
             TaskModel::EVENT_OVERDUE,
-            array('tasks' => $tasks, 'project_name' => $tasks[0]['project_name'])
+            array('tasks' => $tasks, 'project_name' => $tasks[0]['project_name'], 'soon_overdue' => $tasks[0]['date_due'] >= time())
         );
     }
 
